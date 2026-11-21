@@ -85,6 +85,8 @@ class DocsTests(unittest.TestCase):
 
     def test_no_tool_attribution_in_commit_messages(self):
         log = git("log", "--format=%B").lower()
+        # Dependabot's own sign-off and co-author trailers are legitimate; nothing else is.
+        log = "\n".join(l for l in log.split("\n") if "dependabot[bot]" not in l)
         for word in FORBIDDEN:
             self.assertNotIn(word, log)
 
