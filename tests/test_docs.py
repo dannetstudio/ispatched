@@ -12,7 +12,7 @@ DOCS = ["README.md", "README.es.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELO
         "docs/how-verdicts-work.md", "docs/adding-an-advisory.md",
         "docs/writing-a-provider.md", "docs/unverified-vendor-data.md"]
 FLAGS = ["--server", "--targets", "--format", "--advisories", "--timeout", "--workers",
-         "--same-host"]
+         "--same-host", "--version"]
 # Built by concatenation so this file never contains the words it forbids.
 FORBIDDEN = ["cla" + "ude", "anth" + "ropic", "chat" + "gpt", "co-auth" + "ored-by",
              "generated " + "with", "co" + "pilot"]

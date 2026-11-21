@@ -39,6 +39,12 @@ class CliTests(unittest.TestCase):
         self.srv.shutdown()
         self.srv.server_close()
 
+    def test_version_flag(self):
+        from ispatched import __version__
+        code, out, err = run(["--version"])
+        self.assertEqual(code, 0)
+        self.assertIn("ispatched " + __version__, out + err)
+
     def test_list(self):
         code, out, _ = run(["list"])
         self.assertEqual(code, 0)

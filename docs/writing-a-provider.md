@@ -60,7 +60,7 @@ need a new ordering (Alpine's `-r` revisions), add it there with tests.
 - If your provider reads package databases, add its name to `VENDOR_PROVIDERS` in
   `src/ispatched/engine.py` so that its findings outrank headers, the way `dpkg` and `rpm` do.
 - URL-style providers return a `Finding` from a function like
-  `check_url(advisory, url, timeout=10.0, max_redirects=5)` and are called from `run_url`.
+  `check_url(advisory, url, timeout=10.0, max_redirects=5, same_host=False)` and are called from `run_url`.
 
 ## Checklist
 

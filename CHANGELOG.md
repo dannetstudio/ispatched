@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-21
+
+### Added
+- `--version`.
+
+### Fixed
+- The User-Agent sent to targets carries the real version instead of a fixed `0.1`.
+- Documentation: `check_url` signature and the network timeout wording.
+
 ## [0.2.2] - 2026-11-21
 
 ### Changed

@@ -228,6 +228,11 @@ class HttpProviderTests(unittest.TestCase):
         self.assertEqual(f.status, Status.UNKNOWN)
         self.assertLess(time.monotonic() - start, 1.5)
 
+    def test_user_agent_carries_the_current_version(self):
+        from ispatched import __version__
+        from ispatched.providers.http import USER_AGENT
+        self.assertTrue(USER_AGENT.startswith("ispatched/%s " % __version__), USER_AGENT)
+
     def test_bare_hostname_gets_https(self):
         f = check_url(self.advisory, "127.0.0.1:1", timeout=0.5)
         self.assertEqual(f.status, Status.UNKNOWN)

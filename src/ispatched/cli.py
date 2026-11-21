@@ -5,6 +5,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit, urlunsplit
 
+from . import __version__
 from .advisory import find_advisory, load_advisories
 from .engine import run_url
 from .model import IspatchedError, Status
@@ -35,6 +36,7 @@ def _parser():
     p.add_argument("--workers", type=int, default=5)
     p.add_argument("--same-host", action="store_true",
                    help="do not follow redirects to a different host (www. is ignored)")
+    p.add_argument("--version", action="version", version="ispatched " + __version__)
     return p
 
 

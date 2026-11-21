@@ -23,5 +23,5 @@ missing vendor data (open an issue or pull request instead; see [CONTRIBUTING.md
 ## What the tool does on the network
 
 One `HEAD` request per URL (a `GET` only if `HEAD` is refused with 405/501), at most 5
-http(s) redirects, bounded reads, a timeout, and a User-Agent that identifies the tool.
+http(s) redirects, bounded reads, a total time limit per target, and a User-Agent that identifies the tool.
 No payloads, no authentication, no credentials in URLs.

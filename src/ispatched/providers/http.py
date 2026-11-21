@@ -14,10 +14,11 @@ import time
 from http.client import HTTPConnection, HTTPSConnection, HTTPException
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
+from .. import __version__
 from ..model import Confidence, Finding, Status
 from ..versions import parse_php_version
 
-USER_AGENT = "ispatched/0.1 (+https://github.com/dannetstudio/ispatched)"
+USER_AGENT = "ispatched/%s (+https://github.com/dannetstudio/ispatched)" % __version__
 _PHP_IN_HEADER = re.compile(r"PHP/(\d+\.\d+\.\d+[0-9A-Za-z.+~-]*)", re.I)
 _READ_CAP = 4096
 

@@ -90,6 +90,7 @@ restarted since the update.)
 | `--timeout SECONDS` | Total time limit per target in seconds, default 10, shared by every request of a redirect chain. |
 | `--workers N` | Concurrent URL checks, default 5, maximum 20. |
 | `--same-host` | Do not follow redirects to a different host (a leading `www.` is ignored); such a target is reported as `unknown`. |
+| `--version` | Print the version and exit. |
 
 ### Exit codes
 
