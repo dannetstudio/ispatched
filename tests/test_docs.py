@@ -17,6 +17,15 @@ FORBIDDEN = ["cla" + "ude", "anth" + "ropic", "chat" + "gpt", "co-auth" + "ored-
              "generated " + "with", "co" + "pilot"]
 
 
+def git(*args):
+    """Run git in the repo; skip the calling test when git or the checkout is unavailable."""
+    try:
+        return subprocess.check_output(["git"] + list(args), cwd=ROOT,
+                                       stderr=subprocess.DEVNULL).decode()
+    except (OSError, subprocess.CalledProcessError):
+        raise unittest.SkipTest("git is not available for this checkout")
+
+
 def read(rel):
     with open(os.path.join(ROOT, rel), encoding="utf-8") as fh:
         return fh.read()
@@ -64,7 +73,7 @@ class DocsTests(unittest.TestCase):
         self.assertIn(data["id"], loaded)
 
     def test_no_tool_attribution_in_tracked_files(self):
-        files = subprocess.check_output(["git", "ls-files"], cwd=ROOT).decode().split("\n")
+        files = git("ls-files").split("\n")
         for rel in [f for f in files if f]:
             try:
                 text = read(rel).lower()
@@ -74,7 +83,7 @@ class DocsTests(unittest.TestCase):
                 self.assertNotIn(word, text, "%s contains a forbidden word" % rel)
 
     def test_no_tool_attribution_in_commit_messages(self):
-        log = subprocess.check_output(["git", "log", "--format=%B"], cwd=ROOT).decode().lower()
+        log = git("log", "--format=%B").lower()
         for word in FORBIDDEN:
             self.assertNotIn(word, log)
 
