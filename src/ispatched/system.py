@@ -18,6 +18,9 @@ class System(object):
     def readlink(self, path):
         raise NotImplementedError
 
+    def read_mtime(self, path):
+        raise NotImplementedError
+
     def now(self):
         raise NotImplementedError
 
@@ -49,6 +52,12 @@ class SystemRunner(System):
     def readlink(self, path):
         try:
             return os.readlink(path)
+        except OSError:
+            return None
+
+    def read_mtime(self, path):
+        try:
+            return os.stat(path).st_mtime
         except OSError:
             return None
 

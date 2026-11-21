@@ -4,10 +4,11 @@ from ispatched.system import System
 
 
 class FakeSystem(System):
-    def __init__(self, files=None, commands=None, links=None, now=0.0):
+    def __init__(self, files=None, commands=None, links=None, mtimes=None, now=0.0):
         self.files = dict(files or {})
         self.commands = dict(commands or {})
         self.links = dict(links or {})
+        self.mtimes = dict(mtimes or {})
         self._now = now
         self.calls = []
 
@@ -28,6 +29,9 @@ class FakeSystem(System):
             if key.startswith(prefix):
                 names.add(key[len(prefix):].split("/")[0])
         return sorted(names)
+
+    def read_mtime(self, path):
+        return self.mtimes.get(path)
 
     def now(self):
         return self._now
