@@ -10,7 +10,7 @@ import re
 import socket
 import ssl
 from http.client import HTTPConnection, HTTPSConnection, HTTPException
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from ..model import Confidence, Finding, Status
 from ..versions import parse_php_version
@@ -34,9 +34,20 @@ def classify_branch_version(advisory, version):
     return Status.POTENTIALLY_VULNERABLE
 
 
+def redact_url(url):
+    """The URL without its ``user:password@`` part, so secrets never reach any output."""
+    try:
+        parts = urlsplit(url)
+        if "@" not in parts.netloc:
+            return url
+        return urlunsplit(parts._replace(netloc=parts.netloc.rsplit("@", 1)[1]))
+    except ValueError:  # malformed: fall back to a textual strip
+        return re.sub(r"^([a-zA-Z][a-zA-Z0-9+.-]*://)[^/?#]*@", r"\1", url)
+
+
 def _unknown(reason, final_url, headers=None):
     return Finding("http", Status.UNKNOWN, Confidence.NONE, reason,
-                   {"final_url": final_url, "headers": headers or {}, "php_version": None})
+                   {"final_url": redact_url(final_url), "headers": headers or {}, "php_version": None})
 
 
 def _request(url, timeout, method):
@@ -139,7 +150,7 @@ def _check_url(advisory, url, timeout, max_redirects, same_host=False):
     verdicts = [(classify_branch_version(advisory, v), text) for text, v in versions]
     order = {Status.POTENTIALLY_VULNERABLE: 0, Status.UNKNOWN: 1, Status.PATCHED: 2}
     verdict, text = sorted(verdicts, key=lambda p: order[p[0]])[0]
-    evidence = {"final_url": current, "headers": shown, "php_version": text}
+    evidence = {"final_url": redact_url(current), "headers": shown, "php_version": text}
     if verdict == Status.PATCHED:
         reason = "PHP %s advertised; installed build not verified." % text
     elif verdict == Status.POTENTIALLY_VULNERABLE:

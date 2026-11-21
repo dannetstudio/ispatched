@@ -3,6 +3,7 @@
 import argparse
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlsplit, urlunsplit
 
 from .advisory import find_advisory, load_advisories
 from .engine import run_url
@@ -37,8 +38,26 @@ def _parser():
     return p
 
 
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
 def _normalise(url):
-    return url if "://" in url else "https://" + url
+    """Add the default scheme and fold equivalent spellings (case, default port) together."""
+    if "://" not in url:
+        url = "https://" + url
+    try:
+        parts = urlsplit(url)
+        scheme, host, port = parts.scheme.lower(), parts.hostname, parts.port
+    except ValueError:
+        return url
+    if not host:
+        return url
+    if ":" in host:
+        host = "[%s]" % host
+    netloc = host + ("" if port in (None, _DEFAULT_PORTS.get(scheme)) else ":%d" % port)
+    if "@" in parts.netloc:
+        netloc = parts.netloc.rsplit("@", 1)[0] + "@" + netloc
+    return urlunsplit((scheme, netloc, parts.path or "/", parts.query, parts.fragment))
 
 
 def _read_targets(path):

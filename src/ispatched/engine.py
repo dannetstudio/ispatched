@@ -1,7 +1,7 @@
 """Turns provider findings into one verdict and runs the URL check."""
 
 from .model import Confidence, Status, Verdict
-from .providers.http import check_url
+from .providers.http import check_url, redact_url
 
 VENDOR_PROVIDERS = ("dpkg", "rpm")
 
@@ -44,4 +44,4 @@ def combine(target, advisory_id, findings):
 
 def run_url(advisory, url, timeout=10.0, same_host=False):
     finding = check_url(advisory, url, timeout=timeout, same_host=same_host)
-    return combine(url, advisory.id, [finding])
+    return combine(redact_url(url), advisory.id, [finding])

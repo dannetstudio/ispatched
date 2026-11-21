@@ -139,6 +139,19 @@ class HttpProviderTests(unittest.TestCase):
         self.assertFalse(_same_site("example.com", "evil.example.org"))
         self.assertFalse(_same_site("example.com", "sub.example.com"))
 
+    def test_url_credentials_never_reach_the_finding(self):
+        self.route("/", headers={"X-Powered-By": "PHP/8.4.27"})
+        url = self.base.replace("http://", "http://user:s3cret@")
+        f = check_url(self.advisory, url)
+        self.assertEqual(f.status, Status.PATCHED)
+        self.assertNotIn("s3cret", repr(f.evidence))
+        self.assertNotIn("s3cret", f.reason)
+
+    def test_url_credentials_are_hidden_on_failure_too(self):
+        f = check_url(self.advisory, "http://user:s3cret@127.0.0.1:1/", timeout=0.5)
+        self.assertEqual(f.status, Status.UNKNOWN)
+        self.assertNotIn("s3cret", repr(f.evidence) + f.reason)
+
     def test_most_pessimistic_header_wins(self):
         self.route("/", headers={"Server": "Apache PHP/8.4.27", "X-Powered-By": "PHP/8.1.35"})
         f = check_url(self.advisory, self.base)

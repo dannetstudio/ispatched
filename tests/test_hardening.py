@@ -249,6 +249,17 @@ class CliHardeningTests(unittest.TestCase):
                             "--format", "json", "--timeout", "0.5"])
         self.assertEqual(len(json.loads(out.getvalue())["results"]), 1)
 
+    def test_target_output_hides_url_credentials(self):
+        url = self.base.replace("http://", "http://user:s3cret@") + "/ok"
+        code, out, _ = run(["PHP2Shell", url, "--format", "json"])
+        self.assertEqual(code, 0)
+        self.assertNotIn("s3cret", out.getvalue())
+
+    def test_equivalent_spellings_of_one_target_are_checked_once(self):
+        code, out, _ = run(["PHP2Shell", "HTTPS://EXAMPLE.invalid:443/", "https://example.invalid/",
+                            "example.invalid", "--format", "json", "--timeout", "0.5"])
+        self.assertEqual(len(json.loads(out.getvalue())["results"]), 1)
+
     def test_workers_are_clamped(self):
         for n in ("0", "-3", "500"):
             code, _, err = run(["PHP2Shell", self.base + "/ok", "--workers", n])
