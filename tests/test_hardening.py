@@ -116,21 +116,41 @@ class UnsupportedOsTests(unittest.TestCase):
         h.modes, h.root = modes, root
         return h
 
+    CHAIN = {"/usr/sbin": (0, 0o755), "/usr": (0, 0o755), "/": (0, 0o755)}
+
     def test_serving_binary_is_asked_for_its_version(self):
-        h = self.alpine({self.EXE: (0, 0o755)})
+        h = self.alpine(dict(self.CHAIN, **{self.EXE: (0, 0o755)}))
         v = run_server(ADV, h)
         self.assertEqual((v.status, v.confidence), (Status.PATCHED, Confidence.MEDIUM))
         self.assertNotIn(["php-fpm", "-v"], h.calls)
 
     def test_writable_binary_is_not_executed(self):
-        h = self.alpine({self.EXE: (1000, 0o755)})
+        h = self.alpine(dict(self.CHAIN, **{self.EXE: (1000, 0o755)}))
         v = run_server(ADV, h)
         self.assertEqual(v.status, Status.UNKNOWN)
         self.assertNotIn([self.EXE, "-v"], h.calls)
 
     def test_group_writable_binary_is_not_executed(self):
-        h = self.alpine({self.EXE: (0, 0o775)})
+        h = self.alpine(dict(self.CHAIN, **{self.EXE: (0, 0o775)}))
         self.assertEqual(run_server(ADV, h).status, Status.UNKNOWN)
+
+    def test_binary_in_user_writable_directory_is_not_executed(self):
+        for parent in ("/usr/sbin", "/usr", "/"):
+            chain = dict(self.CHAIN, **{self.EXE: (0, 0o755)})
+            chain[parent] = (1000, 0o755)
+            h = self.alpine(chain)
+            self.assertEqual(run_server(ADV, h).status, Status.UNKNOWN, parent)
+            self.assertNotIn([self.EXE, "-v"], h.calls, parent)
+
+    def test_binary_below_world_writable_directory_is_not_executed(self):
+        chain = dict(self.CHAIN, **{self.EXE: (0, 0o755), "/usr": (0, 0o777)})
+        h = self.alpine(chain)
+        self.assertEqual(run_server(ADV, h).status, Status.UNKNOWN)
+
+    def test_unreadable_ancestor_is_not_trusted(self):
+        chain = dict(self.CHAIN, **{self.EXE: (0, 0o755)})
+        del chain["/usr"]
+        self.assertEqual(run_server(ADV, self.alpine(chain)).status, Status.UNKNOWN)
 
 
 class NonRootTests(unittest.TestCase):

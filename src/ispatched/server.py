@@ -1,5 +1,6 @@
 """Check the machine ispatched runs on."""
 
+import posixpath
 import re
 
 from .discovery import discover_serving_php, read_os_release
@@ -13,10 +14,26 @@ DPKG_IDS = ("debian", "ubuntu")
 RPM_IDS = ("rhel", "centos", "rocky", "almalinux")
 
 
-def _trusted_binary(system, path):
-    """Root-owned and not writable by group/others: safe to execute as root."""
+def _root_only(system, path):
     info = system.file_owner_mode(path)
     return info is not None and info[0] == 0 and not info[1] & 0o022
+
+
+def _trusted_binary(system, path):
+    """The file and every directory above it are root-owned and not group/other writable.
+
+    A writable ancestor would let another user swap the file between this check and the
+    execution, so an unreadable or writable ancestor means "do not execute".
+    """
+    if not path or not path.startswith("/") or not _root_only(system, path):
+        return False
+    parent = posixpath.dirname(path)
+    while True:
+        if not _root_only(system, parent):
+            return False
+        if parent == "/":
+            return True
+        parent = posixpath.dirname(parent)
 
 
 def _upstream_fallback(advisory, system, osid, inst):
@@ -25,7 +42,7 @@ def _upstream_fallback(advisory, system, osid, inst):
     if inst.kind != "fpm":
         return unknown("the Apache module's version cannot be read safely")
     if not _trusted_binary(system, inst.exe):
-        return unknown("%s is not a root-owned, non-writable binary" % inst.exe)
+        return unknown("%s is not a root-owned binary in root-owned, non-writable directories" % inst.exe)
     rc, out = system.run([inst.exe, "-v"])
     match = re.search(r"PHP (\d+\.\d+\.\d+\S*)", out)
     note = " (unsupported OS '%s': upstream comparison only)" % osid
