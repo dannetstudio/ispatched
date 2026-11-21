@@ -254,3 +254,7 @@ honestos). También conviene conocer:
 `HEAD`), con un User-Agent que identifica la herramienta, y nunca envía payloads de
 explotación. Aun así, úsalo solo contra sistemas propios o con permiso explícito para
 probarlos. Eres responsable del uso que le des.
+
+---
+
+<sub>Creado por Daniel Ignacio Fernández · [SolutioFy.com](https://solutiofy.com)</sub>

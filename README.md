@@ -245,3 +245,7 @@ Also worth knowing:
 `HEAD`), with a User-Agent that identifies the tool, and it never sends exploit payloads.
 Even so, run it only against systems you own or have explicit permission to test. You are
 responsible for how you use it.
+
+---
+
+<sub>Created by Daniel Ignacio Fernández · [SolutioFy.com](https://solutiofy.com)</sub>
