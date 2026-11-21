@@ -18,6 +18,11 @@ classifiers = [
     "Topic :: Security",
 ]
 
+[project.urls]
+Homepage = "https://github.com/dannetstudio/ispatched"
+Issues = "https://github.com/dannetstudio/ispatched/issues"
+Changelog = "https://github.com/dannetstudio/ispatched/blob/main/CHANGELOG.md"
+
 [project.scripts]
 ispatched = "ispatched.cli:main"
 

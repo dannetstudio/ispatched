@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security problem in ispatched itself
+    url: https://github.com/dannetstudio/ispatched/security/advisories/new
+    about: Please report it privately, not as a public issue.

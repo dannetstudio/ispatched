@@ -4,11 +4,18 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-11-21
 
 ### Added
+- CI badge, project URLs in the package metadata, issue and pull request templates,
+  Dependabot for GitHub Actions and a code of conduct.
 - `--same-host`: do not follow HTTP redirects to a different host (a leading `www.` is
   ignored); the target is reported as `unknown`.
+
+### Changed
+- `user:password@` in a URL is never echoed in any output.
+- Equivalent spellings of one target (scheme case, default port) are checked once.
+- Removed a leftover fallback stub from `__main__.py`.
 
 ## [0.1.0] - 2026-11-21
 

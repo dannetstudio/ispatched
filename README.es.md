@@ -1,5 +1,7 @@
 # ispatched — ¿este host ya está parcheado contra ese CVE?
 
+[![CI](https://github.com/dannetstudio/ispatched/actions/workflows/ci.yml/badge.svg)](https://github.com/dannetstudio/ispatched/actions/workflows/ci.yml)
+
 [English](README.md) · [Español](README.es.md)
 
 Cuando sale un CVE crítico, todo sysadmin se hace la misma pregunta: **¿mi servidor ya está
