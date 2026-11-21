@@ -1,0 +1,12 @@
+{
+  "id": "PHP2Shell",
+  "aliases": ["CVE-TEST-1"],
+  "title": "Override",
+  "summary": "Overrides the built-in advisory.",
+  "published": "2026-01-01",
+  "references": [],
+  "upstream_fixed": {"8.4": 1},
+  "eol_branches": [],
+  "vendors": [],
+  "notes": ""
+}

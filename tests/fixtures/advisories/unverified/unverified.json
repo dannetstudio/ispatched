@@ -1,0 +1,16 @@
+{
+  "id": "TEST-UNVERIFIED",
+  "aliases": [],
+  "title": "t",
+  "summary": "s",
+  "published": "2026-01-01",
+  "references": [],
+  "upstream_fixed": {"8.4": 1},
+  "eol_branches": [],
+  "vendors": [
+    {"vendor": "debian", "release": "12", "package": "php8.2", "fixed": "8.2.35-1~deb12u1", "url": "https://example.test/a", "verified_on": "2026-11-21"},
+    {"vendor": "debian", "release": "13", "package": "php8.4", "fixed": "8.4.27-1~deb13u1", "url": "https://example.test/b"},
+    {"vendor": "ubuntu", "release": "24.04", "package": "php8.3", "fixed": "8.3.6-0ubuntu0.24.04.13", "url": "https://example.test/c", "verified_on": ""}
+  ],
+  "notes": ""
+}
