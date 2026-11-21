@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-21
+
 ### Changed
 - The text output shows the final URL when a redirect was followed.
 - SARIF locations for `--server` use `urn:ispatched:host:<hostname>` instead of a literal
