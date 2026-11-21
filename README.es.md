@@ -88,7 +88,7 @@ desde la actualización.)
 | `--targets ARCHIVO` | Archivo con una URL por línea (se omiten líneas vacías y comentarios `#`). |
 | `--format text\|json\|sarif` | Formato de salida. SARIF 2.1.0 entra directo en el code scanning de GitHub. |
 | `--advisories DIR` | Carga avisos JSON adicionales desde `DIR` (repetible). |
-| `--timeout SEGUNDOS` | Tiempo límite por operación de red, 10 por defecto (una cadena lenta de redirecciones puede tardar más en total). |
+| `--timeout SEGUNDOS` | Tiempo límite total por objetivo, en segundos, 10 por defecto, compartido por todas las peticiones de una cadena de redirecciones. |
 | `--workers N` | Revisiones de URL simultáneas, 5 por defecto, máximo 20. |
 | `--same-host` | No sigue redirecciones a otro host (se ignora un `www.` inicial); ese objetivo se informa como `unknown`. |
 

@@ -1,4 +1,5 @@
 import threading
+import time
 import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -197,6 +198,35 @@ class HttpProviderTests(unittest.TestCase):
         from ispatched.providers.http import _PHP_IN_HEADER
         m = _PHP_IN_HEADER.search("PHP/8.4.27\x1b[2Jevil")
         self.assertEqual(m.group(1), "8.4.27")
+
+    def test_timeout_is_a_total_deadline_not_per_socket_read(self):
+        def handler(h):
+            h.wfile.write(b"HTTP/1.1 200 OK\r\n")
+            h.wfile.flush()
+            try:
+                for _ in range(40):  # drips a header every 0.1s: each read is "fast"
+                    time.sleep(0.1)
+                    h.wfile.write(b"X-Drip: 1\r\n")
+                    h.wfile.flush()
+            except OSError:
+                pass
+            return None
+        self.server.routes["/"] = handler
+        start = time.monotonic()
+        f = check_url(self.advisory, self.base, timeout=0.5)
+        elapsed = time.monotonic() - start
+        self.assertEqual(f.status, Status.UNKNOWN)
+        self.assertLess(elapsed, 2.0)
+
+    def test_redirect_chain_shares_one_deadline(self):
+        def slow_redirect(h):
+            time.sleep(0.3)
+            return (302, {"Location": "/"}, b"")
+        self.server.routes["/"] = slow_redirect
+        start = time.monotonic()
+        f = check_url(self.advisory, self.base, timeout=0.5)
+        self.assertEqual(f.status, Status.UNKNOWN)
+        self.assertLess(time.monotonic() - start, 1.5)
 
     def test_bare_hostname_gets_https(self):
         f = check_url(self.advisory, "127.0.0.1:1", timeout=0.5)

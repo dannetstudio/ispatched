@@ -59,5 +59,21 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual(read_os_release(FakeSystem()), {"id": "", "version_id": ""})
 
 
+class ClockTicksTests(unittest.TestCase):
+    def test_uses_the_system_value(self):
+        from unittest import mock
+        from ispatched import discovery
+        with mock.patch.object(discovery.os, "sysconf", return_value=250):
+            self.assertEqual(discovery._clock_ticks(), 250)
+
+    def test_falls_back_to_100(self):
+        from unittest import mock
+        from ispatched import discovery
+        with mock.patch.object(discovery.os, "sysconf", side_effect=OSError):
+            self.assertEqual(discovery._clock_ticks(), 100)
+        with mock.patch.object(discovery.os, "sysconf", return_value=-1):
+            self.assertEqual(discovery._clock_ticks(), 100)
+
+
 if __name__ == "__main__":
     unittest.main()

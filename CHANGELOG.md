@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-21
+
+### Changed
+- `--timeout` is now a total time limit per target (shared by a whole redirect chain and
+  enforced even against servers that send data slowly), not a limit per socket operation.
+- Process start times use the system's real clock tick rate instead of a fixed 100.
+
 ## [0.2.1] - 2026-11-21
 
 ### Changed

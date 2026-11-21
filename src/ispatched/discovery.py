@@ -2,7 +2,15 @@
 
 import os
 
-CLOCK_TICKS = 100
+
+
+def _clock_ticks():
+    """Kernel clock ticks per second (``/proc/<pid>/stat`` times are in ticks)."""
+    try:
+        ticks = int(os.sysconf("SC_CLK_TCK"))
+    except (AttributeError, OSError, ValueError):
+        return 100
+    return ticks if ticks > 0 else 100
 
 
 class PhpInstance(object):
@@ -35,7 +43,7 @@ def _started_at(system, pid, btime):
         return None
     rest = stat.rsplit(")", 1)[1].split()
     try:
-        return btime + int(rest[19]) / float(CLOCK_TICKS)
+        return btime + int(rest[19]) / float(_clock_ticks())
     except (IndexError, ValueError):
         return None
 

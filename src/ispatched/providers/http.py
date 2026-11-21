@@ -9,6 +9,8 @@ no body is ever read beyond a small cap.
 import re
 import socket
 import ssl
+import threading
+import time
 from http.client import HTTPConnection, HTTPSConnection, HTTPException
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -50,13 +52,29 @@ def _unknown(reason, final_url, headers=None):
                    {"final_url": redact_url(final_url), "headers": headers or {}, "php_version": None})
 
 
-def _request(url, timeout, method):
+def _request(url, deadline, method):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise socket.timeout("timed out (total time limit reached)")
     parts = urlsplit(url)
     cls = HTTPSConnection if parts.scheme == "https" else HTTPConnection
-    kwargs = {"timeout": timeout}
+    kwargs = {"timeout": remaining}
     if parts.scheme == "https":
         kwargs["context"] = ssl.create_default_context()
     conn = cls(parts.hostname, parts.port, **kwargs)
+
+    def expire():
+        # Wakes a read blocked on a server that sends data slowly but never finishes.
+        sock = conn.sock
+        if sock is not None:
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+
+    watchdog = threading.Timer(remaining, expire)
+    watchdog.daemon = True
+    watchdog.start()
     try:
         path = parts.path or "/"
         if parts.query:
@@ -75,13 +93,14 @@ def _request(url, timeout, method):
                 headers.setdefault(key, value)
         return resp.status, headers
     finally:
+        watchdog.cancel()
         conn.close()
 
 
-def _fetch(url, timeout):
-    status, headers = _request(url, timeout, "HEAD")
+def _fetch(url, deadline):
+    status, headers = _request(url, deadline, "HEAD")
     if status in (405, 501):
-        status, headers = _request(url, timeout, "GET")
+        status, headers = _request(url, deadline, "GET")
     return status, headers
 
 
@@ -111,11 +130,12 @@ def _check_url(advisory, url, timeout, max_redirects, same_host=False):
         return _unknown("unsupported URL scheme", url)
     if not parts.hostname:
         return _unknown("URL has no host name", url)
+    deadline = time.monotonic() + timeout
     current = url
     redirects = 0
     while True:
         try:
-            status, headers = _fetch(current, timeout)
+            status, headers = _fetch(current, deadline)
         except (OSError, HTTPException, socket.timeout, ValueError) as exc:
             return _unknown("request failed: %s" % (exc or exc.__class__.__name__), current)
         location = headers.get("location")

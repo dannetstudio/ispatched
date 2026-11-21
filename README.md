@@ -87,7 +87,7 @@ restarted since the update.)
 | `--targets FILE` | File with one URL per line (blank lines and `#` comments are skipped). |
 | `--format text\|json\|sarif` | Output format. SARIF 2.1.0 goes straight into GitHub code scanning. |
 | `--advisories DIR` | Load extra advisory JSON files from `DIR` (repeatable). |
-| `--timeout SECONDS` | Timeout per network operation, default 10 (a slow redirect chain can take longer overall). |
+| `--timeout SECONDS` | Total time limit per target in seconds, default 10, shared by every request of a redirect chain. |
 | `--workers N` | Concurrent URL checks, default 5, maximum 20. |
 | `--same-host` | Do not follow redirects to a different host (a leading `www.` is ignored); such a target is reported as `unknown`. |
 
