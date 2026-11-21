@@ -53,6 +53,13 @@ def _upstream_fallback(advisory, system, osid, inst):
     return f
 
 
+def _replaced(finding):
+    """The process still runs a binary that was replaced on disk: it is not running the fix."""
+    return Finding(finding.provider, Status.POTENTIALLY_VULNERABLE, finding.confidence,
+                   "%s The running PHP binary was replaced after it started; "
+                   "restart php-fpm/Apache." % finding.reason, finding.evidence)
+
+
 def run_server(advisory, system):
     target = "this server"
     instances = discover_serving_php(system)
@@ -74,6 +81,8 @@ def run_server(advisory, system):
             findings.append(check_rpm(advisory, system, inst, osr))
         else:
             findings.append(_upstream_fallback(advisory, system, osid, inst))
+        if inst.replaced and findings[-1].status == Status.PATCHED:
+            findings[-1] = _replaced(findings[-1])
     if (not any(f.status == Status.POTENTIALLY_VULNERABLE for f in findings)
             and any(f.status == Status.UNKNOWN for f in findings)):
         bad = [f for f in findings if f.status == Status.UNKNOWN][0]

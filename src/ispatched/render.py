@@ -1,6 +1,7 @@
 """Output formats: text for people, JSON for scripts, SARIF for CI."""
 
 import json
+import socket
 
 from . import __version__
 from .model import Status
@@ -14,12 +15,31 @@ def _printable(text):
                    for ch in str(text))
 
 
+def _final_url(verdict):
+    """The URL a redirect ended on, when it differs from the one that was asked for."""
+    for f in verdict.findings:
+        final = (f.evidence or {}).get("final_url") if isinstance(f.evidence, dict) else None
+        if final and final != verdict.target:
+            return final
+    return None
+
+
+def _sarif_uri(target):
+    if "://" in target:
+        return target
+    return "urn:ispatched:host:%s" % socket.gethostname()
+
+
 def render_text(verdicts):
     lines = []
     for v in verdicts:
         label = v.status.value.replace("_", " ").upper()
-        lines.append("%s (%s): %s → %s" % (label, v.confidence.name.lower(),
-                                               _printable(v.target), _printable(v.reason)))
+        line = "%s (%s): %s → %s" % (label, v.confidence.name.lower(),
+                                    _printable(v.target), _printable(v.reason))
+        final = _final_url(v)
+        if final:
+            line += " (final URL: %s)" % _printable(final)
+        lines.append(line)
     return "\n".join(lines)
 
 
@@ -39,7 +59,7 @@ def render_sarif(verdicts):
             "level": "warning" if v.status == Status.POTENTIALLY_VULNERABLE else "note",
             "message": {"text": "%s (%s evidence): %s" % (
                 v.status.value, v.confidence.name.lower(), v.reason)},
-            "locations": [{"physicalLocation": {"artifactLocation": {"uri": v.target}}}],
+            "locations": [{"physicalLocation": {"artifactLocation": {"uri": _sarif_uri(v.target)}}}],
         })
     doc = {"$schema": SARIF_SCHEMA, "version": "2.1.0", "runs": [{
         "tool": {"driver": {"name": "ispatched", "version": __version__,

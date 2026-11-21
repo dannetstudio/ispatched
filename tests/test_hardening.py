@@ -164,6 +164,30 @@ class NonRootTests(unittest.TestCase):
         self.assertEqual(v.reason, "No PHP serving process found")
 
 
+class ReplacedBinaryTests(unittest.TestCase):
+    """A process still running a binary that was replaced on disk is not running the fix."""
+
+    def test_deleted_fpm_binary_is_not_patched(self):
+        proc = (10, FPM[1] + " (deleted)", 100, "")
+        cmds = dpkg_cmds(FPM[1], "php8.2-fpm", "8.2.35-1~deb12u1")
+        v = run_server(ADV, host("debian", "12", [proc], cmds))
+        self.assertEqual(v.status, Status.POTENTIALLY_VULNERABLE)
+        self.assertIn("restart", v.reason)
+
+    def test_deleted_libphp_is_not_patched(self):
+        lib = "/usr/lib/apache2/modules/libphp8.2.so"
+        proc = (20, "/usr/sbin/apache2", 100, "7f00-7f01 r-xp 0 08:01 9 %s (deleted)\n" % lib)
+        cmds = dpkg_cmds(lib, "libapache2-mod-php8.2", "8.2.35-1~deb12u1")
+        v = run_server(ADV, host("debian", "12", [proc], cmds))
+        self.assertEqual(v.status, Status.POTENTIALLY_VULNERABLE)
+        self.assertIn("restart", v.reason)
+
+    def test_intact_binary_is_still_patched(self):
+        cmds = dpkg_cmds(FPM[1], "php8.2-fpm", "8.2.35-1~deb12u1")
+        v = run_server(ADV, host("debian", "12", [FPM], cmds))
+        self.assertEqual(v.status, Status.PATCHED)
+
+
 class ServerMixTests(unittest.TestCase):
     def test_patched_plus_unknown_instance_is_unknown(self):
         other = (11, "/opt/custom/php-fpm", 100, "")

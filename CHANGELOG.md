@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- The text output shows the final URL when a redirect was followed.
+- SARIF locations for `--server` use `urn:ispatched:host:<hostname>` instead of a literal
+  "this server".
+- A PHP process whose binary or `libphp` was replaced after it started is never reported as
+  patched: restart PHP-FPM or Apache.
+
 ## [0.2.0] - 2026-11-21
 
 ### Added

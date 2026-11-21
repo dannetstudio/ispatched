@@ -53,6 +53,10 @@ A patched package does not fix running workers. With `--server`, `ispatched` com
 process start time with the package install time. If the workers started first, the
 finding says so and the result is not "patched": restart PHP-FPM or Apache.
 
+The same applies when Linux reports the running binary (or `libphp`) as `(deleted)`: the
+file on disk was replaced after the process started, so the process is still running the
+old build, whatever the package database says.
+
 ## Exit codes
 
 `0` all patched, `1` something `potentially_vulnerable`, `3` nothing vulnerable but
