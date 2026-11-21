@@ -150,6 +150,11 @@ class HttpProviderTests(unittest.TestCase):
         # raw latin-1 byte in a header
         self.assertEqual(check_url(self.advisory, self.base).status, Status.PATCHED)
 
+    def test_version_token_stops_at_control_characters(self):
+        from ispatched.providers.http import _PHP_IN_HEADER
+        m = _PHP_IN_HEADER.search("PHP/8.4.27\x1b[2Jevil")
+        self.assertEqual(m.group(1), "8.4.27")
+
     def test_bare_hostname_gets_https(self):
         f = check_url(self.advisory, "127.0.0.1:1", timeout=0.5)
         self.assertEqual(f.status, Status.UNKNOWN)

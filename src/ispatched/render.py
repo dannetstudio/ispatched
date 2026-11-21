@@ -8,11 +8,18 @@ from .model import Status
 SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 
 
+def _printable(text):
+    """Escape control characters so remote data cannot drive the terminal."""
+    return "".join(ch if ch.isprintable() else ch.encode("unicode_escape").decode("ascii")
+                   for ch in str(text))
+
+
 def render_text(verdicts):
     lines = []
     for v in verdicts:
         label = v.status.value.replace("_", " ").upper()
-        lines.append("%s (%s): %s → %s" % (label, v.confidence.name.lower(), v.target, v.reason))
+        lines.append("%s (%s): %s → %s" % (label, v.confidence.name.lower(),
+                                               _printable(v.target), _printable(v.reason)))
     return "\n".join(lines)
 
 
