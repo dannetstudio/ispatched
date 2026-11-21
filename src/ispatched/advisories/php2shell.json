@@ -1,6 +1,9 @@
 {
   "id": "PHP2Shell",
-  "aliases": ["CVE-2026-109618", "CVE-2026-109619"],
+  "aliases": [
+    "CVE-2026-109618",
+    "CVE-2026-109619"
+  ],
   "title": "PHP2Shell: remote code execution in the PHP core",
   "summary": "Two memory-safety flaws in PHP itself (not a library) that can lead to remote code execution: CVE-2026-109618 (memory exhaustion during upload-progress unserialization leads to a use-after-free) and CVE-2026-109619 (use-after-free in the fatal-error backtrace path, combined with OPcache type confusion). Upstream fixed both on 2026-10-21.",
   "published": "2026-10-21",
@@ -15,8 +18,129 @@
     "https://access.redhat.com/security/cve/CVE-2026-109618",
     "https://access.redhat.com/security/cve/CVE-2026-109619"
   ],
-  "upstream_fixed": {"8.2": 35, "8.3": 36, "8.4": 27, "8.5": 12},
-  "eol_branches": ["5.4", "5.5", "5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0", "8.1"],
-  "vendors": [],
+  "upstream_fixed": {
+    "8.2": 35,
+    "8.3": 36,
+    "8.4": 27,
+    "8.5": 12
+  },
+  "eol_branches": [
+    "5.4",
+    "5.5",
+    "5.6",
+    "7.0",
+    "7.1",
+    "7.2",
+    "7.3",
+    "7.4",
+    "8.0",
+    "8.1"
+  ],
+  "vendors": [
+    {
+      "vendor": "debian",
+      "release": "12",
+      "package": "php8.2",
+      "fixed": "8.2.35-1~deb12u1",
+      "url": "https://security-tracker.debian.org/tracker/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "debian",
+      "release": "13",
+      "package": "php8.4",
+      "fixed": "8.4.27-1~deb13u1",
+      "url": "https://security-tracker.debian.org/tracker/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "26.10",
+      "package": "php8.5",
+      "fixed": "8.5.9-0ubuntu2.1",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "26.04",
+      "package": "php8.5",
+      "fixed": "8.5.4-0ubuntu1.5",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "24.04",
+      "package": "php8.3",
+      "fixed": "8.3.6-0ubuntu0.24.04.13",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "22.04",
+      "package": "php8.1",
+      "fixed": "8.1.2-1ubuntu2.28",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "20.04",
+      "package": "php7.4",
+      "fixed": "7.4.3-4ubuntu2.29+esm5",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "18.04",
+      "package": "php7.2",
+      "fixed": "7.2.24-0ubuntu0.18.04.17+esm14",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "16.04",
+      "package": "php7.0",
+      "fixed": "7.0.33-0ubuntu0.16.04.16+esm22",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "ubuntu",
+      "release": "14.04",
+      "package": "php5",
+      "fixed": "5.5.9+dfsg-1ubuntu4.29+esm18",
+      "url": "https://ubuntu.com/security/CVE-2026-109618",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "rhel",
+      "release": "9",
+      "package": "php",
+      "fixed": "0:8.0.30-8.el9_8.1",
+      "url": "https://access.redhat.com/errata/RHSA-2026:87151",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "rhel",
+      "release": "8",
+      "package": "php",
+      "fixed": "0:7.4.33-8.module+el8.10.0+25117+30337cca",
+      "url": "https://access.redhat.com/errata/RHSA-2026:87080",
+      "verified_on": "2026-11-21"
+    },
+    {
+      "vendor": "rhel",
+      "release": "7",
+      "package": "php",
+      "fixed": "0:5.4.16-48.el7_9.1",
+      "url": "https://access.redhat.com/errata/RHSA-2026:88693",
+      "verified_on": "2026-11-21"
+    }
+  ],
   "notes": "Branches listed in eol_branches have no upstream fix; only a vendor backport can make them safe. A plain version number cannot tell you whether a distribution backported the fix."
 }
