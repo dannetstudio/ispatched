@@ -217,3 +217,12 @@ def parse_php_version(text):
         int(match.group(1)), int(match.group(2)), int(match.group(3)),
         suffix, bool(_PRERELEASE_RE.match(suffix)),
     )
+
+
+_BRANCH_RE = re.compile(r"^(?:\d+:)?(\d+\.\d+)")
+
+
+def upstream_branch(version_text):
+    """``'0:8.2.13-1.el9'`` -> ``'8.2'``; ``None`` when there is no X.Y prefix."""
+    match = _BRANCH_RE.match((version_text or "").strip())
+    return match.group(1) if match else None

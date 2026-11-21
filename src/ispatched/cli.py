@@ -43,8 +43,16 @@ def _read_targets(path):
     try:
         with open(path, encoding="utf-8") as fh:
             return [l.strip() for l in fh if l.strip() and not l.strip().startswith("#")]
-    except OSError as exc:
+    except (OSError, ValueError) as exc:
         raise IspatchedError("cannot read targets file %s (%s)" % (path, exc))
+
+
+def _emit(text):
+    try:
+        print(text)
+    except UnicodeEncodeError:  # C/POSIX locale under cron: degrade instead of crashing
+        encoding = getattr(sys.stdout, "encoding", None) or "ascii"
+        print(text.replace("\u2192", "->").encode(encoding, "replace").decode(encoding))
 
 
 def _run(argv):
@@ -71,7 +79,7 @@ def _run(argv):
     if unique:
         with ThreadPoolExecutor(max_workers=workers) as pool:
             verdicts.extend(pool.map(lambda u: run_url(advisory, u, timeout=args.timeout), unique))
-    print(RENDERERS[args.format](verdicts))
+    _emit(RENDERERS[args.format](verdicts))
     worst = max(verdicts, key=lambda v: _RANK[v.status])
     return worst.exit_code
 
@@ -84,3 +92,6 @@ def main(argv=None):
         return 2
     except SystemExit as exc:  # argparse --help
         return exc.code if isinstance(exc.code, int) else 0
+    except Exception as exc:  # never a traceback: exit 1 would read as "vulnerable"
+        sys.stderr.write("error: unexpected failure (%s: %s)\n" % (exc.__class__.__name__, exc))
+        return 2

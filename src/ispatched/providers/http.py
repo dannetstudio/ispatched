@@ -55,7 +55,13 @@ def _request(url, timeout, method):
         resp = conn.getresponse()
         if method == "GET":
             resp.read(_READ_CAP)
-        headers = dict((k.lower(), v) for k, v in resp.getheaders())
+        headers = {}
+        for key, value in resp.getheaders():
+            key = key.lower()
+            if key in headers and key in ("server", "x-powered-by"):
+                headers[key] += ", " + value  # keep every advertised version
+            else:
+                headers.setdefault(key, value)
         return resp.status, headers
     finally:
         conn.close()
@@ -69,10 +75,21 @@ def _fetch(url, timeout):
 
 
 def check_url(advisory, url, timeout=10.0, max_redirects=5):
+    """Never raises: anything unexpected becomes an ``unknown`` finding."""
+    try:
+        return _check_url(advisory, url, timeout, max_redirects)
+    except Exception as exc:  # hostile servers and malformed URLs must not stop a batch
+        return _unknown("request failed: %s" % (exc or exc.__class__.__name__), url)
+
+
+def _check_url(advisory, url, timeout, max_redirects):
     if "://" not in url:
         url = "https://" + url
-    if urlsplit(url).scheme not in ("http", "https"):
+    parts = urlsplit(url)
+    if parts.scheme not in ("http", "https"):
         return _unknown("unsupported URL scheme", url)
+    if not parts.hostname:
+        return _unknown("URL has no host name", url)
     current = url
     redirects = 0
     while True:

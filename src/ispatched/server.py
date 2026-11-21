@@ -4,7 +4,7 @@ import re
 
 from .discovery import discover_serving_php, read_os_release
 from .engine import combine
-from .model import Confidence, Status, Verdict
+from .model import Confidence, Finding, Status, Verdict
 from .providers.dpkg import check_dpkg
 from .providers.rpm import check_rpm
 from .providers.upstream import check_upstream_version
@@ -13,14 +13,24 @@ DPKG_IDS = ("debian", "ubuntu")
 RPM_IDS = ("rhel", "centos", "rocky", "almalinux")
 
 
-def _upstream_fallback(advisory, system, osid):
-    rc, out = system.run(["php-fpm", "-v"])
+def _trusted_binary(system, path):
+    """Root-owned and not writable by group/others: safe to execute as root."""
+    info = system.file_owner_mode(path)
+    return info is not None and info[0] == 0 and not info[1] & 0o022
+
+
+def _upstream_fallback(advisory, system, osid, inst):
+    unknown = lambda why: Finding("upstream", Status.UNKNOWN, Confidence.NONE,
+                                  "unsupported OS '%s' and %s" % (osid, why))
+    if inst.kind != "fpm":
+        return unknown("the Apache module's version cannot be read safely")
+    if not _trusted_binary(system, inst.exe):
+        return unknown("%s is not a root-owned, non-writable binary" % inst.exe)
+    rc, out = system.run([inst.exe, "-v"])
     match = re.search(r"PHP (\d+\.\d+\.\d+\S*)", out)
     note = " (unsupported OS '%s': upstream comparison only)" % osid
     if rc != 0 or not match:
-        from .model import Finding
-        return Finding("upstream", Status.UNKNOWN, Confidence.NONE,
-                       "unsupported OS '%s' and PHP version unreadable" % osid)
+        return unknown("PHP version unreadable")
     f = check_upstream_version(advisory, match.group(1))
     f.reason += note
     return f
@@ -30,18 +40,23 @@ def run_server(advisory, system):
     target = "this server"
     instances = discover_serving_php(system)
     if not instances:
-        return Verdict(target, advisory.id, Status.UNKNOWN, Confidence.NONE,
-                       "No PHP serving process found", [])
+        reason = "No PHP serving process found"
+        if not system.is_root():
+            reason += " (cannot inspect other users' processes; run as root)"
+        return Verdict(target, advisory.id, Status.UNKNOWN, Confidence.NONE, reason, [])
     osr = read_os_release(system)
     osid = osr["id"]
     findings = []
     for inst in instances:
-        if osid in DPKG_IDS:
+        if inst.exe is None:
+            findings.append(Finding("discovery", Status.UNKNOWN, Confidence.NONE,
+                                    "Apache has a PHP module loaded but its file could not be located"))
+        elif osid in DPKG_IDS:
             findings.append(check_dpkg(advisory, system, inst, osr))
         elif osid in RPM_IDS:
             findings.append(check_rpm(advisory, system, inst, osr))
         else:
-            findings.append(_upstream_fallback(advisory, system, osid))
+            findings.append(_upstream_fallback(advisory, system, osid, inst))
     if (not any(f.status == Status.POTENTIALLY_VULNERABLE for f in findings)
             and any(f.status == Status.UNKNOWN for f in findings)):
         bad = [f for f in findings if f.status == Status.UNKNOWN][0]

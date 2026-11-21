@@ -3,7 +3,8 @@
 import re
 
 from ..model import Confidence, Finding, Status
-from ..versions import dpkg_compare
+from ..versions import dpkg_compare, upstream_branch
+from .upstream import check_upstream_version
 
 _NAME = re.compile(r"php(\d+(?:\.\d+)?)")
 
@@ -19,6 +20,30 @@ def restart_note(system, instance, install_time):
 
 def _unknown(reason):
     return Finding("dpkg", Status.UNKNOWN, Confidence.NONE, reason)
+
+
+def foreign_fallback(advisory, installed, package, evidence, why):
+    """The package does not come from the vendor the advisory row describes.
+
+    Vendor backport data would be wrong for it, so fall back to the upstream
+    comparison (MEDIUM) and say why.
+    """
+    finding = check_upstream_version(advisory, installed.split(":", 1)[-1], evidence)
+    finding.reason = "%s %s %s; upstream comparison only. %s" % (package, installed, why,
+                                                                  finding.reason)
+    return finding
+
+
+def _is_vendor_build(vendor, release, installed, row_fixed):
+    """True when ``installed`` looks like the distribution's own build of the row's branch."""
+    low = installed.lower()
+    if "sury" in low or "ondrej" in low:
+        return False
+    if upstream_branch(installed) != upstream_branch(row_fixed):
+        return False
+    if vendor == "debian":
+        return re.search(r"deb%su\d" % re.escape(release), installed) is not None
+    return re.search(r"-\d+ubuntu\d", installed) is not None
 
 
 def check_dpkg(advisory, system, instance, os_release):
@@ -41,6 +66,9 @@ def check_dpkg(advisory, system, instance, os_release):
                        "no verified advisory data for %s %s %s" % (osid, rel, key), evidence)
     row = rows[0]
     evidence["fixed"] = row.fixed
+    if not _is_vendor_build(osid, rel, installed, row.fixed):
+        return foreign_fallback(advisory, installed, package, evidence,
+                                "is not the %s %s build the advisory row describes" % (osid, rel))
     if dpkg_compare(installed, row.fixed) < 0:
         return Finding("dpkg", Status.POTENTIALLY_VULNERABLE, Confidence.HIGH,
                        "%s %s is older than the vendor fix %s." % (package, installed, row.fixed),

@@ -2,7 +2,8 @@
 
 from ..model import Confidence, Finding, Status
 from ..versions import rpm_compare
-from .dpkg import restart_note
+from ..versions import upstream_branch
+from .dpkg import foreign_fallback, restart_note
 
 
 def _unknown(reason, evidence=None):
@@ -32,6 +33,9 @@ def check_rpm(advisory, system, instance, os_release):
         return _unknown("no verified advisory data for rhel %s php" % rel, evidence)
     row = rows[0]
     evidence["fixed"] = row.fixed
+    if "remi" in installed.lower() or upstream_branch(installed) != upstream_branch(row.fixed):
+        return foreign_fallback(advisory, installed, package, evidence,
+                                "is not the default PHP build of RHEL %s" % rel)
     if rpm_compare(installed, row.fixed) < 0:
         return Finding("rpm", Status.POTENTIALLY_VULNERABLE, Confidence.HIGH,
                        "%s %s is older than the vendor fix %s." % (package, installed, row.fixed),

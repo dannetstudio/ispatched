@@ -55,7 +55,7 @@ ispatched --advisories my-advisories EXAMPLE-2026-1 --server
 
 | Field | Meaning |
 | --- | --- |
-| `vendor` | The `ID` from `/etc/os-release` (`debian`, `ubuntu`, `rhel`, ...). |
+| `vendor` | The `ID` from `/etc/os-release` (`debian`, `ubuntu` or `rhel`; Rocky, Alma and CentOS are matched to `rhel`). |
 | `release` | The `VERSION_ID`: `12`, `22.04`; for RPM distributions the major (`9`). |
 | `package` | Debian-family: `php<branch>` such as `php8.2` (or `php5`). RHEL: `php`. |
 | `fixed` | First fixed package version. Debian: full version. RPM: `epoch:version-release`. |

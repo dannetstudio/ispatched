@@ -65,9 +65,10 @@ class DpkgTests(unittest.TestCase):
         self.assertEqual(v.status, Status.PATCHED)
 
     def test_two_instances_worst_wins(self):
-        apache = (20, "/usr/sbin/apache2", 100, "libphp8.4.so")
+        lib = "/usr/lib/apache2/modules/libphp8.4.so"
+        apache = (20, "/usr/sbin/apache2", 100, "7f00-7f01 r-xp 0 08:01 9 %s\n" % lib)
         cmds = dpkg_cmds(FPM[1], "php8.2-fpm", "8.2.34-1~deb12u1")
-        cmds.update(dpkg_cmds(apache[1], "libapache2-mod-php8.4", "8.4.27-1~deb13u1"))
+        cmds.update(dpkg_cmds(lib, "libapache2-mod-php8.4", "8.4.27-1~deb13u1"))
         v = self.verdict("debian", "12", [FPM, apache], cmds)
         self.assertEqual(v.status, Status.POTENTIALLY_VULNERABLE)
 

@@ -85,7 +85,7 @@ restarted since the update.)
 | `--targets FILE` | File with one URL per line (blank lines and `#` comments are skipped). |
 | `--format text\|json\|sarif` | Output format. SARIF 2.1.0 goes straight into GitHub code scanning. |
 | `--advisories DIR` | Load extra advisory JSON files from `DIR` (repeatable). |
-| `--timeout SECONDS` | Per-request timeout, default 10. |
+| `--timeout SECONDS` | Timeout per network operation, default 10 (a slow redirect chain can take longer overall). |
 | `--workers N` | Concurrent URL checks, default 5, maximum 20. |
 
 ### Exit codes
@@ -176,6 +176,11 @@ Full detail and the reasoning: [docs/how-verdicts-work.md](docs/how-verdicts-wor
 - Vendor tables cover what has been verified so far (Debian 12/13, Ubuntu 14.04–26.10,
   RHEL 7/8/9). Other distributions fall back to an upstream comparison or `unknown`.
   See [docs/unverified-vendor-data.md](docs/unverified-vendor-data.md).
+- `--server` needs root to see other users' processes (PHP-FPM usually runs as `www-data`).
+  Without it you get `unknown` with a note saying so.
+- Vendor evidence applies only to the distribution's own build. A PHP from another source
+  (Sury/Ondřej PPA, Remi, a RHEL module stream, a source build) is compared against upstream
+  releases only, at medium confidence, and the reason says so.
 - Several PHP versions on one box: every serving process is checked, and one `unknown`
   instance makes the whole verdict `unknown` rather than hiding behind a patched one.
 - It does not scan for compromise. If you ran an exposed, unpatched PHP, look at your logs

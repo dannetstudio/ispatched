@@ -24,6 +24,13 @@ class System(object):
     def now(self):
         raise NotImplementedError
 
+    def file_owner_mode(self, path):
+        """``(uid, permission bits)`` of ``path``, or ``None``."""
+        raise NotImplementedError
+
+    def is_root(self):
+        raise NotImplementedError
+
 
 class SystemRunner(System):
     """Real implementation; never raises for missing files or commands."""
@@ -63,3 +70,13 @@ class SystemRunner(System):
 
     def now(self):
         return time.time()
+
+    def file_owner_mode(self, path):
+        try:
+            st = os.stat(path)
+        except OSError:
+            return None
+        return st.st_uid, st.st_mode & 0o7777
+
+    def is_root(self):
+        return os.geteuid() == 0

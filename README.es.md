@@ -86,7 +86,7 @@ desde la actualización.)
 | `--targets ARCHIVO` | Archivo con una URL por línea (se omiten líneas vacías y comentarios `#`). |
 | `--format text\|json\|sarif` | Formato de salida. SARIF 2.1.0 entra directo en el code scanning de GitHub. |
 | `--advisories DIR` | Carga avisos JSON adicionales desde `DIR` (repetible). |
-| `--timeout SEGUNDOS` | Tiempo límite por petición, 10 por defecto. |
+| `--timeout SEGUNDOS` | Tiempo límite por operación de red, 10 por defecto (una cadena lenta de redirecciones puede tardar más en total). |
 | `--workers N` | Revisiones de URL simultáneas, 5 por defecto, máximo 20. |
 
 ### Códigos de salida
@@ -183,6 +183,11 @@ Detalle completo y razonamiento: [docs/how-verdicts-work.md](docs/how-verdicts-w
 - Las tablas de vendors cubren lo verificado hasta ahora (Debian 12/13, Ubuntu 14.04–26.10,
   RHEL 7/8/9). Otras distribuciones caen en una comparación con upstream o en `unknown`.
   Ver [docs/unverified-vendor-data.md](docs/unverified-vendor-data.md).
+- `--server` necesita root para ver los procesos de otros usuarios (PHP-FPM suele correr como
+  `www-data`). Sin root el resultado es `unknown`, con una nota que lo explica.
+- La evidencia del proveedor vale solo para el build de la propia distribución. Un PHP de otra
+  fuente (PPA de Sury/Ondřej, Remi, un module stream de RHEL, compilado a mano) se compara solo
+  con las versiones upstream, con confianza media, y el motivo lo dice.
 - Varias versiones de PHP en una misma máquina: se revisa cada proceso que atiende, y una
   instancia `unknown` vuelve `unknown` a todo el veredicto en lugar de esconderse detrás de una
   parcheada.

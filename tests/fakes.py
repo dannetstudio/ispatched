@@ -4,11 +4,14 @@ from ispatched.system import System
 
 
 class FakeSystem(System):
-    def __init__(self, files=None, commands=None, links=None, mtimes=None, now=0.0):
+    def __init__(self, files=None, commands=None, links=None, mtimes=None, now=0.0,
+                 modes=None, root=True):
         self.files = dict(files or {})
         self.commands = dict(commands or {})
         self.links = dict(links or {})
         self.mtimes = dict(mtimes or {})
+        self.modes = dict(modes or {})
+        self.root = root
         self._now = now
         self.calls = []
 
@@ -35,3 +38,9 @@ class FakeSystem(System):
 
     def now(self):
         return self._now
+
+    def file_owner_mode(self, path):
+        return self.modes.get(path)
+
+    def is_root(self):
+        return self.root

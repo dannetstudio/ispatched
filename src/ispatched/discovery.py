@@ -39,6 +39,19 @@ def _started_at(system, pid, btime):
         return None
 
 
+def _libphp_path(maps):
+    """Path of the mapped ``libphp*.so`` ('' if mapped without a readable path, None if absent)."""
+    found = None
+    for line in maps.splitlines():
+        if "libphp" not in line:
+            continue
+        found = ""
+        fields = line.split(None, 5)
+        if len(fields) == 6 and "libphp" in os.path.basename(fields[5]):
+            return fields[5].replace(" (deleted)", "").strip()
+    return found
+
+
 def discover_serving_php(system):
     btime = _boot_time(system)
     found = []
@@ -53,8 +66,10 @@ def discover_serving_php(system):
         if base.startswith("php-fpm"):
             kind = "fpm"
         elif base in ("apache2", "httpd"):
-            if "libphp" in (system.read_text("/proc/%s/maps" % name) or ""):
+            lib = _libphp_path(system.read_text("/proc/%s/maps" % name) or "")
+            if lib is not None:
                 kind = "apache-module"
+                exe = lib or None  # '' = loaded but path unreadable
         if kind:
             found.append(PhpInstance(int(name), exe, kind, _started_at(system, name, btime)))
     return found

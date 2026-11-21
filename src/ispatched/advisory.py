@@ -88,6 +88,9 @@ def _parse(path, data):
             _fail(path, "'verified_on' must be YYYY-MM-DD")
         vendors.append(VendorFix(row["vendor"], row["release"], row["package"],
                                  row["fixed"], row["url"], verified))
+    for key in ("aliases", "references", "eol_branches"):
+        if not all(isinstance(item, str) for item in _need(path, data, key, list)):
+            _fail(path, "'%s' must contain only strings" % key)
     return Advisory(
         id=_need(path, data, "id", str),
         aliases=_need(path, data, "aliases", list),
