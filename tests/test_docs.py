@@ -11,7 +11,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS = ["README.md", "README.es.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md",
         "docs/how-verdicts-work.md", "docs/adding-an-advisory.md",
         "docs/writing-a-provider.md", "docs/unverified-vendor-data.md"]
-FLAGS = ["--server", "--targets", "--format", "--advisories", "--timeout", "--workers"]
+FLAGS = ["--server", "--targets", "--format", "--advisories", "--timeout", "--workers",
+         "--same-host"]
 # Built by concatenation so this file never contains the words it forbids.
 FORBIDDEN = ["cla" + "ude", "anth" + "ropic", "chat" + "gpt", "co-auth" + "ored-by",
              "generated " + "with", "co" + "pilot"]

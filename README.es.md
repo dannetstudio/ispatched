@@ -88,6 +88,7 @@ desde la actualización.)
 | `--advisories DIR` | Carga avisos JSON adicionales desde `DIR` (repetible). |
 | `--timeout SEGUNDOS` | Tiempo límite por operación de red, 10 por defecto (una cadena lenta de redirecciones puede tardar más en total). |
 | `--workers N` | Revisiones de URL simultáneas, 5 por defecto, máximo 20. |
+| `--same-host` | No sigue redirecciones a otro host (se ignora un `www.` inicial); ese objetivo se informa como `unknown`. |
 
 ### Códigos de salida
 

@@ -74,15 +74,25 @@ def _fetch(url, timeout):
     return status, headers
 
 
-def check_url(advisory, url, timeout=10.0, max_redirects=5):
+def _bare_host(host):
+    host = (host or "").lower().rstrip(".")
+    return host[4:] if host.startswith("www.") else host
+
+
+def _same_site(a, b):
+    """Same host name, ignoring case and a leading ``www.``."""
+    return _bare_host(a) == _bare_host(b)
+
+
+def check_url(advisory, url, timeout=10.0, max_redirects=5, same_host=False):
     """Never raises: anything unexpected becomes an ``unknown`` finding."""
     try:
-        return _check_url(advisory, url, timeout, max_redirects)
+        return _check_url(advisory, url, timeout, max_redirects, same_host)
     except Exception as exc:  # hostile servers and malformed URLs must not stop a batch
         return _unknown("request failed: %s" % (exc or exc.__class__.__name__), url)
 
 
-def _check_url(advisory, url, timeout, max_redirects):
+def _check_url(advisory, url, timeout, max_redirects, same_host=False):
     if "://" not in url:
         url = "https://" + url
     parts = urlsplit(url)
@@ -105,6 +115,9 @@ def _check_url(advisory, url, timeout, max_redirects):
             target = urljoin(current, location)
             if urlsplit(target).scheme not in ("http", "https"):
                 return _unknown("unsupported redirect to %s" % target, current)
+            if same_host and not _same_site(parts.hostname, urlsplit(target).hostname):
+                return _unknown("redirect to a different host (%s) not followed"
+                                % urlsplit(target).hostname, current)
             current = target
             continue
         break

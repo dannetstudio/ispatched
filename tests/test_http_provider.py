@@ -109,6 +109,36 @@ class HttpProviderTests(unittest.TestCase):
         self.assertEqual(f.status, Status.UNKNOWN)
         self.assertIn("unsupported redirect", f.reason)
 
+    def _other_host(self):
+        return self.base.replace("127.0.0.1", "localhost")
+
+    def test_cross_host_redirect_is_followed_by_default(self):
+        self.route("/", 302, {"Location": self._other_host() + "/final"})
+        self.route("/final", headers={"X-Powered-By": "PHP/8.4.27"})
+        f = check_url(self.advisory, self.base)
+        self.assertEqual(f.status, Status.PATCHED)
+
+    def test_same_host_refuses_cross_host_redirect(self):
+        self.route("/", 302, {"Location": self._other_host() + "/final"})
+        self.route("/final", headers={"X-Powered-By": "PHP/8.4.27"})
+        f = check_url(self.advisory, self.base, same_host=True)
+        self.assertEqual(f.status, Status.UNKNOWN)
+        self.assertIn("different host", f.reason)
+        self.assertNotIn("GET /final", self.server.log)
+
+    def test_same_host_allows_same_host_redirect(self):
+        self.route("/", 301, {"Location": "/final"})
+        self.route("/final", headers={"X-Powered-By": "PHP/8.4.27"})
+        f = check_url(self.advisory, self.base, same_host=True)
+        self.assertEqual(f.status, Status.PATCHED)
+
+    def test_same_host_treats_www_as_the_same_host(self):
+        from ispatched.providers.http import _same_site
+        self.assertTrue(_same_site("example.com", "www.example.com"))
+        self.assertTrue(_same_site("www.example.com", "EXAMPLE.com"))
+        self.assertFalse(_same_site("example.com", "evil.example.org"))
+        self.assertFalse(_same_site("example.com", "sub.example.com"))
+
     def test_most_pessimistic_header_wins(self):
         self.route("/", headers={"Server": "Apache PHP/8.4.27", "X-Powered-By": "PHP/8.1.35"})
         f = check_url(self.advisory, self.base)

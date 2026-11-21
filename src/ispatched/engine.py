@@ -42,6 +42,6 @@ def combine(target, advisory_id, findings):
     return Verdict(target, advisory_id, Status.UNKNOWN, Confidence.NONE, reason, findings)
 
 
-def run_url(advisory, url, timeout=10.0):
-    finding = check_url(advisory, url, timeout=timeout)
+def run_url(advisory, url, timeout=10.0, same_host=False):
+    finding = check_url(advisory, url, timeout=timeout, same_host=same_host)
     return combine(url, advisory.id, [finding])

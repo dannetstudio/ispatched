@@ -32,6 +32,8 @@ def _parser():
                    help="extra directory of advisory JSON files")
     p.add_argument("--timeout", type=float, default=10.0)
     p.add_argument("--workers", type=int, default=5)
+    p.add_argument("--same-host", action="store_true",
+                   help="do not follow redirects to a different host (www. is ignored)")
     return p
 
 
@@ -78,7 +80,8 @@ def _run(argv):
         verdicts.append(run_server(advisory, SystemRunner()))
     if unique:
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            verdicts.extend(pool.map(lambda u: run_url(advisory, u, timeout=args.timeout), unique))
+            verdicts.extend(pool.map(lambda u: run_url(advisory, u, timeout=args.timeout,
+                                                       same_host=args.same_host), unique))
     _emit(RENDERERS[args.format](verdicts))
     worst = max(verdicts, key=lambda v: _RANK[v.status])
     return worst.exit_code

@@ -254,6 +254,14 @@ class CliHardeningTests(unittest.TestCase):
             code, _, err = run(["PHP2Shell", self.base + "/ok", "--workers", n])
             self.assertEqual(code, 0, err)
 
+    def test_same_host_flag_reaches_the_http_check(self):
+        for argv, expected in (([], False), (["--same-host"], True)):
+            with mock.patch("ispatched.engine.check_url",
+                            wraps=check_url) as spy:
+                code, _, err = run(["PHP2Shell", self.base + "/ok"] + argv)
+            self.assertEqual(code, 0, err)
+            self.assertEqual(spy.call_args[1].get("same_host"), expected)
+
     def test_unexpected_error_exits_2_with_message(self):
         with mock.patch("ispatched.cli.run_url", side_effect=RuntimeError("boom")):
             code, _, err = run(["PHP2Shell", self.base + "/ok"])
