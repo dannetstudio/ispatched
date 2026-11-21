@@ -5,7 +5,7 @@
     "CVE-2026-109619"
   ],
   "title": "PHP2Shell: remote code execution in the PHP core",
-  "summary": "Two memory-safety flaws in PHP itself (not a library) that can lead to remote code execution: CVE-2026-109618 (memory exhaustion during upload-progress unserialization leads to a use-after-free) and CVE-2026-109619 (use-after-free in the fatal-error backtrace path, combined with OPcache type confusion). Upstream fixed both on 2026-10-21.",
+  "summary": "Two memory-safety flaws in PHP itself, not in a library, that can lead to unauthenticated remote code execution. CVE-2026-109618: out-of-memory handling can interrupt PHP while internal request data is only partially initialized, and request cleanup then treats the invalid data as valid. CVE-2026-109619: request-owned internal state can survive after its memory was freed and be reused by a later request handled by the same worker. Upstream fixed both on 2026-10-21.",
   "published": "2026-10-21",
   "references": [
     "https://en.wikipedia.org/wiki/PHP2Shell",
